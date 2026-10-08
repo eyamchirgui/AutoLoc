@@ -28,7 +28,7 @@ public class Maintenance {
     @Column(length = 255)
     private String description;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)   // CORRIGÉ : LAZY ajouté
     @JoinColumn(name = "vehicule_id", nullable = false)
     private Vehicule vehicule;
 }

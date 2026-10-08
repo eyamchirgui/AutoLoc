@@ -5,7 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import java.util.*;
+
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "equipement")
@@ -21,6 +23,7 @@ public class Equipement {
 
     @Column(nullable = false, length = 100)
     private String libelle;
+
     @ManyToMany(mappedBy = "equipements")
     private Set<Vehicule> vehicules = new HashSet<>();
 }

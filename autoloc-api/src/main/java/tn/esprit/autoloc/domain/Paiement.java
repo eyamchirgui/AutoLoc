@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.LocalDate;   // CORRIGÉ : LocalDate (comme le diagramme)
 
 @Entity
 @Table(name = "paiement")
@@ -25,7 +25,7 @@ public class Paiement {
     private BigDecimal montant;
 
     @Column(nullable = false)
-    private LocalDateTime datePaiement;
+    private LocalDate datePaiement;   // CORRIGÉ : LocalDateTime -> LocalDate
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)

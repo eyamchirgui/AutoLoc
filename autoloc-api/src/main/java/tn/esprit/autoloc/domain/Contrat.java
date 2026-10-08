@@ -8,7 +8,8 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;   // CORRIGÉ : plus de java.util.*
+import java.util.List;
 
 @Entity
 @Table(name = "contrat")
@@ -37,4 +38,15 @@ public class Contrat {
 
     @OneToMany(mappedBy = "contrat", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Paiement> paiements = new ArrayList<>();
+
+    // CORRIGÉ : méthodes de synchronisation des deux côtés
+    public void addPaiement(Paiement p) {
+        paiements.add(p);
+        p.setContrat(this);
+    }
+
+    public void removePaiement(Paiement p) {
+        paiements.remove(p);
+        p.setContrat(null);
+    }
 }

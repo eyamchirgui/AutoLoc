@@ -5,8 +5,10 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
 import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;   // CORRIGÉ : plus de java.util.*
+import java.util.List;
 
 @Entity
 @Table(name = "client")
