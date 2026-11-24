@@ -1,14 +1,24 @@
 package tn.esprit.autoloc.web.controller;
 
+import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
-import tn.esprit.autoloc.domain.Equipement;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+import tn.esprit.autoloc.dto.EquipementRequest;
+import tn.esprit.autoloc.dto.EquipementResponse;
 import tn.esprit.autoloc.service.IEquipementService;
 
 @RestController
-@RequestMapping("/api/equipements")
+@RequestMapping("/equipements")
 @RequiredArgsConstructor
 public class EquipementController {
 
@@ -16,23 +26,23 @@ public class EquipementController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Equipement create(@RequestBody Equipement equipement) {
-        return equipementService.create(equipement);
+    public EquipementResponse create(@Valid @RequestBody EquipementRequest request) {
+        return equipementService.create(request);
     }
 
     @GetMapping("/{id}")
-    public Equipement findById(@PathVariable Long id) {
+    public EquipementResponse findById(@PathVariable Long id) {
         return equipementService.findById(id);
     }
 
     @GetMapping
-    public List<Equipement> findAll() {
+    public List<EquipementResponse> findAll() {
         return equipementService.findAll();
     }
 
     @PutMapping("/{id}")
-    public Equipement update(@PathVariable Long id, @RequestBody Equipement equipement) {
-        return equipementService.update(id, equipement);
+    public EquipementResponse update(@PathVariable Long id, @Valid @RequestBody EquipementRequest request) {
+        return equipementService.update(id, request);
     }
 
     @DeleteMapping("/{id}")

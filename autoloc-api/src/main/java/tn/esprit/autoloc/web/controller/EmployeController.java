@@ -1,14 +1,24 @@
 package tn.esprit.autoloc.web.controller;
 
+import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
-import tn.esprit.autoloc.domain.Employe;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+import tn.esprit.autoloc.dto.EmployeRequest;
+import tn.esprit.autoloc.dto.EmployeResponse;
 import tn.esprit.autoloc.service.IEmployeService;
 
 @RestController
-@RequestMapping("/api/employes")
+@RequestMapping("/employes")
 @RequiredArgsConstructor
 public class EmployeController {
 
@@ -16,23 +26,23 @@ public class EmployeController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Employe create(@RequestBody Employe employe) {
-        return employeService.create(employe);
+    public EmployeResponse create(@Valid @RequestBody EmployeRequest request) {
+        return employeService.create(request);
     }
 
     @GetMapping("/{id}")
-    public Employe findById(@PathVariable Long id) {
+    public EmployeResponse findById(@PathVariable Long id) {
         return employeService.findById(id);
     }
 
     @GetMapping
-    public List<Employe> findAll() {
+    public List<EmployeResponse> findAll() {
         return employeService.findAll();
     }
 
     @PutMapping("/{id}")
-    public Employe update(@PathVariable Long id, @RequestBody Employe employe) {
-        return employeService.update(id, employe);
+    public EmployeResponse update(@PathVariable Long id, @Valid @RequestBody EmployeRequest request) {
+        return employeService.update(id, request);
     }
 
     @DeleteMapping("/{id}")

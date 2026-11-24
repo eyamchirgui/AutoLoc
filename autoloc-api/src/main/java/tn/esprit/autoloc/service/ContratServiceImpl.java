@@ -6,7 +6,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tn.esprit.autoloc.domain.Contrat;
+import tn.esprit.autoloc.dto.ContratRequest;
+import tn.esprit.autoloc.dto.ContratResponse;
 import tn.esprit.autoloc.exception.ResourceNotFoundException;
+import tn.esprit.autoloc.mapper.ContratMapper;
 import tn.esprit.autoloc.repository.IContratRepository;
 
 @Service
@@ -14,41 +17,41 @@ import tn.esprit.autoloc.repository.IContratRepository;
 public class ContratServiceImpl implements IContratService {
 
     private final IContratRepository contratRepository;
+    private final ContratMapper contratMapper;
 
     @Override
     @Transactional
-    public Contrat create(Contrat contrat) {
-        if (contrat.getIdContrat() != null) {
-            throw new IllegalArgumentException(
-                    "Un nouveau contrat ne doit pas avoir d'identifiant");
-        }
+    public ContratResponse create(ContratRequest request) {
+        Contrat contrat = contratMapper.toEntity(request);
         valider(contrat);
-        return contratRepository.save(contrat);
+        return contratMapper.toResponse(contratRepository.save(contrat));
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Contrat findById(Long id) {
-        return contratRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Contrat", id));
+    public ContratResponse findById(Long id) {
+        return contratMapper.toResponse(getOrThrow(id));
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<Contrat> findAll() {
-        return contratRepository.findAll();
+    public List<ContratResponse> findAll() {
+        return contratRepository.findAll().stream()
+                .map(contratMapper::toResponse)
+                .toList();
     }
 
     @Override
     @Transactional
-    public Contrat update(Long id, Contrat contrat) {
-        Contrat existant = findById(id);
-        valider(contrat);
-        existant.setDateSignature(contrat.getDateSignature());
-        existant.setMontantTotal(contrat.getMontantTotal());
-        existant.setValide(contrat.isValide());
-        // ni l'identifiant, ni la réservation, ni la collection de paiements
-        return contratRepository.save(existant);
+    public ContratResponse update(Long id, ContratRequest request) {
+        Contrat existant = getOrThrow(id);
+        Contrat donnees = contratMapper.toEntity(request);
+        valider(donnees);
+        existant.setDateSignature(donnees.getDateSignature());
+        existant.setMontantTotal(donnees.getMontantTotal());
+        existant.setValide(donnees.isValide());
+        // ni la réservation, ni la collection de paiements ne sont modifiées ici
+        return contratMapper.toResponse(contratRepository.save(existant));
     }
 
     @Override
@@ -57,7 +60,12 @@ public class ContratServiceImpl implements IContratService {
         if (!contratRepository.existsById(id)) {
             throw new ResourceNotFoundException("Contrat", id);
         }
-        contratRepository.deleteById(id); // paiements supprimés par cascade
+        contratRepository.deleteById(id);
+    }
+
+    private Contrat getOrThrow(Long id) {
+        return contratRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Contrat", id));
     }
 
     private void valider(Contrat contrat) {

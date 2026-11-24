@@ -5,7 +5,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tn.esprit.autoloc.domain.Reservation;
+import tn.esprit.autoloc.domain.StatutReservation;
+import tn.esprit.autoloc.dto.ReservationRequest;
+import tn.esprit.autoloc.dto.ReservationResponse;
 import tn.esprit.autoloc.exception.ResourceNotFoundException;
+import tn.esprit.autoloc.mapper.ReservationMapper;
 import tn.esprit.autoloc.repository.IReservationRepository;
 
 @Service
@@ -13,40 +17,47 @@ import tn.esprit.autoloc.repository.IReservationRepository;
 public class ReservationServiceImpl implements IReservationService {
 
     private final IReservationRepository reservationRepository;
+    private final ReservationMapper reservationMapper;
 
     @Override
     @Transactional
-    public Reservation create(Reservation reservation) {
-        if (reservation.getIdReservation() != null) {
-            throw new IllegalArgumentException(
-                    "Une nouvelle réservation ne doit pas avoir d'identifiant");
+    public ReservationResponse create(ReservationRequest request) {
+        Reservation reservation = reservationMapper.toEntity(request);
+        valider(reservation);
+        if (reservation.getStatut() == null) {
+            reservation.setStatut(StatutReservation.EN_ATTENTE);
         }
-        valider(reservation);
-        return reservationRepository.save(reservation);
+        return reservationMapper.toResponse(reservationRepository.save(reservation));
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Reservation findById(Long id) {
-        return reservationRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Reservation", id));
+    public ReservationResponse findById(Long id) {
+        return reservationMapper.toResponse(getOrThrow(id));
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<Reservation> findAll() {
-        return reservationRepository.findAll();
+    public List<ReservationResponse> findAll() {
+        return reservationRepository.findAll().stream()
+                .map(reservationMapper::toResponse)
+                .toList();
     }
 
     @Override
     @Transactional
-    public Reservation update(Long id, Reservation reservation) {
-        Reservation existant = findById(id);
-        valider(reservation);
-        existant.setDateDebut(reservation.getDateDebut());
-        existant.setDateFin(reservation.getDateFin());
-        existant.setStatut(reservation.getStatut());
-        return reservationRepository.save(existant);
+    public ReservationResponse update(Long id, ReservationRequest request) {
+        Reservation existant = getOrThrow(id);
+        Reservation donnees = reservationMapper.toEntity(request);
+        valider(donnees);
+        existant.setDateDebut(donnees.getDateDebut());
+        existant.setDateFin(donnees.getDateFin());
+        if (donnees.getStatut() != null) {
+            existant.setStatut(donnees.getStatut());
+        }
+        existant.setVehicule(donnees.getVehicule());
+        existant.setClient(donnees.getClient());
+        return reservationMapper.toResponse(reservationRepository.save(existant));
     }
 
     @Override
@@ -56,6 +67,11 @@ public class ReservationServiceImpl implements IReservationService {
             throw new ResourceNotFoundException("Reservation", id);
         }
         reservationRepository.deleteById(id);
+    }
+
+    private Reservation getOrThrow(Long id) {
+        return reservationRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Reservation", id));
     }
 
     private void valider(Reservation reservation) {

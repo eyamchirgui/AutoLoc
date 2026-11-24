@@ -5,7 +5,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tn.esprit.autoloc.domain.Maintenance;
+import tn.esprit.autoloc.dto.MaintenanceRequest;
+import tn.esprit.autoloc.dto.MaintenanceResponse;
 import tn.esprit.autoloc.exception.ResourceNotFoundException;
+import tn.esprit.autoloc.mapper.MaintenanceMapper;
 import tn.esprit.autoloc.repository.IMaintenanceRepository;
 
 @Service
@@ -13,40 +16,41 @@ import tn.esprit.autoloc.repository.IMaintenanceRepository;
 public class MaintenanceServiceImpl implements IMaintenanceService {
 
     private final IMaintenanceRepository maintenanceRepository;
+    private final MaintenanceMapper maintenanceMapper;
 
     @Override
     @Transactional
-    public Maintenance create(Maintenance maintenance) {
-        if (maintenance.getIdMaintenance() != null) {
-            throw new IllegalArgumentException(
-                    "Une nouvelle maintenance ne doit pas avoir d'identifiant");
-        }
+    public MaintenanceResponse create(MaintenanceRequest request) {
+        Maintenance maintenance = maintenanceMapper.toEntity(request);
         valider(maintenance);
-        return maintenanceRepository.save(maintenance);
+        return maintenanceMapper.toResponse(maintenanceRepository.save(maintenance));
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Maintenance findById(Long id) {
-        return maintenanceRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Maintenance", id));
+    public MaintenanceResponse findById(Long id) {
+        return maintenanceMapper.toResponse(getOrThrow(id));
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<Maintenance> findAll() {
-        return maintenanceRepository.findAll();
+    public List<MaintenanceResponse> findAll() {
+        return maintenanceRepository.findAll().stream()
+                .map(maintenanceMapper::toResponse)
+                .toList();
     }
 
     @Override
     @Transactional
-    public Maintenance update(Long id, Maintenance maintenance) {
-        Maintenance existant = findById(id);
-        valider(maintenance);
-        existant.setDateDebut(maintenance.getDateDebut());
-        existant.setDateFin(maintenance.getDateFin());
-        existant.setDescription(maintenance.getDescription());
-        return maintenanceRepository.save(existant);
+    public MaintenanceResponse update(Long id, MaintenanceRequest request) {
+        Maintenance existant = getOrThrow(id);
+        Maintenance donnees = maintenanceMapper.toEntity(request);
+        valider(donnees);
+        existant.setDateDebut(donnees.getDateDebut());
+        existant.setDateFin(donnees.getDateFin());
+        existant.setDescription(donnees.getDescription());
+        existant.setVehicule(donnees.getVehicule());
+        return maintenanceMapper.toResponse(maintenanceRepository.save(existant));
     }
 
     @Override
@@ -56,6 +60,11 @@ public class MaintenanceServiceImpl implements IMaintenanceService {
             throw new ResourceNotFoundException("Maintenance", id);
         }
         maintenanceRepository.deleteById(id);
+    }
+
+    private Maintenance getOrThrow(Long id) {
+        return maintenanceRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Maintenance", id));
     }
 
     private void valider(Maintenance maintenance) {

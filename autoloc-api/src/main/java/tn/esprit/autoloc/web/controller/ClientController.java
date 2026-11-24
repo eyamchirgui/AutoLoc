@@ -3,6 +3,7 @@ package tn.esprit.autoloc.web.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -15,7 +16,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import tn.esprit.autoloc.domain.Client;
+import tn.esprit.autoloc.dto.ClientRequest;
+import tn.esprit.autoloc.dto.ClientResponse;
 import tn.esprit.autoloc.service.IClientService;
 
 @Tag(name = "Clients", description = "Gestion des clients")
@@ -26,29 +28,28 @@ public class ClientController {
 
     private final IClientService clientService;
 
-    @Operation(summary = "Lister les clients", description = "Retourne tous les clients.")
-    @ApiResponse(responseCode = "200", description = "Liste retournée (éventuellement vide)")
-    @GetMapping
-    public List<Client> findAll() {
-        return clientService.findAll();
+    @Operation(summary = "Créer un client", description = "Crée un client. La date d'inscription est renseignée automatiquement.")
+    @ApiResponse(responseCode = "201", description = "Client créé")
+    @ApiResponse(responseCode = "400", description = "Données invalides (nom, e-mail ou numéro de permis invalide...)")
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public ClientResponse create(@Valid @RequestBody ClientRequest request) {
+        return clientService.create(request);
     }
 
     @Operation(summary = "Consulter un client", description = "Retourne le client correspondant à l'identifiant.")
     @ApiResponse(responseCode = "200", description = "Client trouvé")
     @ApiResponse(responseCode = "404", description = "Client introuvable")
     @GetMapping("/{id}")
-    public Client findById(@PathVariable Long id) {
+    public ClientResponse findById(@PathVariable Long id) {
         return clientService.findById(id);
     }
 
-    @Operation(summary = "Créer un client",
-            description = "Crée un client. La date d'inscription est renseignée automatiquement si absente.")
-    @ApiResponse(responseCode = "201", description = "Client créé")
-    @ApiResponse(responseCode = "400", description = "Données invalides (identifiant fourni, nom ou e-mail vide...)")
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public Client create(@RequestBody Client client) {
-        return clientService.create(client);
+    @Operation(summary = "Lister les clients", description = "Retourne tous les clients.")
+    @ApiResponse(responseCode = "200", description = "Liste retournée (éventuellement vide)")
+    @GetMapping
+    public List<ClientResponse> findAll() {
+        return clientService.findAll();
     }
 
     @Operation(summary = "Modifier un client", description = "Met à jour les attributs modifiables d'un client.")
@@ -56,8 +57,8 @@ public class ClientController {
     @ApiResponse(responseCode = "400", description = "Données invalides")
     @ApiResponse(responseCode = "404", description = "Client introuvable")
     @PutMapping("/{id}")
-    public Client update(@PathVariable Long id, @RequestBody Client client) {
-        return clientService.update(id, client);
+    public ClientResponse update(@PathVariable Long id, @Valid @RequestBody ClientRequest request) {
+        return clientService.update(id, request);
     }
 
     @Operation(summary = "Supprimer un client")

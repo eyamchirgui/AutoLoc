@@ -5,7 +5,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tn.esprit.autoloc.domain.Equipement;
+import tn.esprit.autoloc.dto.EquipementRequest;
+import tn.esprit.autoloc.dto.EquipementResponse;
 import tn.esprit.autoloc.exception.ResourceNotFoundException;
+import tn.esprit.autoloc.mapper.EquipementMapper;
 import tn.esprit.autoloc.repository.IEquipementRepository;
 
 @Service
@@ -13,38 +16,38 @@ import tn.esprit.autoloc.repository.IEquipementRepository;
 public class EquipementServiceImpl implements IEquipementService {
 
     private final IEquipementRepository equipementRepository;
+    private final EquipementMapper equipementMapper;
 
     @Override
     @Transactional
-    public Equipement create(Equipement equipement) {
-        if (equipement.getIdEquipement() != null) {
-            throw new IllegalArgumentException(
-                    "Un nouvel équipement ne doit pas avoir d'identifiant");
-        }
+    public EquipementResponse create(EquipementRequest request) {
+        Equipement equipement = equipementMapper.toEntity(request);
         valider(equipement);
-        return equipementRepository.save(equipement);
+        return equipementMapper.toResponse(equipementRepository.save(equipement));
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Equipement findById(Long id) {
-        return equipementRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Equipement", id));
+    public EquipementResponse findById(Long id) {
+        return equipementMapper.toResponse(getOrThrow(id));
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<Equipement> findAll() {
-        return equipementRepository.findAll();
+    public List<EquipementResponse> findAll() {
+        return equipementRepository.findAll().stream()
+                .map(equipementMapper::toResponse)
+                .toList();
     }
 
     @Override
     @Transactional
-    public Equipement update(Long id, Equipement equipement) {
-        Equipement existant = findById(id);
-        valider(equipement);
-        existant.setLibelle(equipement.getLibelle());
-        return equipementRepository.save(existant);
+    public EquipementResponse update(Long id, EquipementRequest request) {
+        Equipement existant = getOrThrow(id);
+        Equipement donnees = equipementMapper.toEntity(request);
+        valider(donnees);
+        existant.setLibelle(donnees.getLibelle());
+        return equipementMapper.toResponse(equipementRepository.save(existant));
     }
 
     @Override
@@ -54,6 +57,11 @@ public class EquipementServiceImpl implements IEquipementService {
             throw new ResourceNotFoundException("Equipement", id);
         }
         equipementRepository.deleteById(id);
+    }
+
+    private Equipement getOrThrow(Long id) {
+        return equipementRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Equipement", id));
     }
 
     private void valider(Equipement equipement) {

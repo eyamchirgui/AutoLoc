@@ -1,14 +1,24 @@
 package tn.esprit.autoloc.web.controller;
 
+import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
-import tn.esprit.autoloc.domain.Reservation;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+import tn.esprit.autoloc.dto.ReservationRequest;
+import tn.esprit.autoloc.dto.ReservationResponse;
 import tn.esprit.autoloc.service.IReservationService;
 
 @RestController
-@RequestMapping("/api/reservations")
+@RequestMapping("/reservations")
 @RequiredArgsConstructor
 public class ReservationController {
 
@@ -16,23 +26,23 @@ public class ReservationController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Reservation create(@RequestBody Reservation reservation) {
-        return reservationService.create(reservation);
+    public ReservationResponse create(@Valid @RequestBody ReservationRequest request) {
+        return reservationService.create(request);
     }
 
     @GetMapping("/{id}")
-    public Reservation findById(@PathVariable Long id) {
+    public ReservationResponse findById(@PathVariable Long id) {
         return reservationService.findById(id);
     }
 
     @GetMapping
-    public List<Reservation> findAll() {
+    public List<ReservationResponse> findAll() {
         return reservationService.findAll();
     }
 
     @PutMapping("/{id}")
-    public Reservation update(@PathVariable Long id, @RequestBody Reservation reservation) {
-        return reservationService.update(id, reservation);
+    public ReservationResponse update(@PathVariable Long id, @Valid @RequestBody ReservationRequest request) {
+        return reservationService.update(id, request);
     }
 
     @DeleteMapping("/{id}")
