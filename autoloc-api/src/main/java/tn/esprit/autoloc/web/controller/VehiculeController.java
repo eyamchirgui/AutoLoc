@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import tn.esprit.autoloc.dto.VehiculeRequest;
@@ -59,6 +60,28 @@ public class VehiculeController {
     @PutMapping("/{id}")
     public VehiculeResponse update(@PathVariable Long id, @Valid @RequestBody VehiculeRequest request) {
         return vehiculeService.update(id, request);
+    }
+
+    @Operation(summary = "Affecter un équipement à un véhicule", description = "Associe un équipement existant à un véhicule.")
+    @ApiResponse(responseCode = "200", description = "Équipement affecté au véhicule")
+    @ApiResponse(responseCode = "404", description = "Véhicule ou équipement introuvable")
+    @PutMapping("/{idVehicule}/equipements/{idEquipement}")
+    public VehiculeResponse affecterVehiculeAEquipement(
+            @PathVariable Long idVehicule,
+            @PathVariable Long idEquipement) {
+        return vehiculeService.affecterVehiculeAEquipement(idVehicule, idEquipement);
+    }
+
+    @Operation(summary = "Affecter une maintenance à un véhicule", description = "Crée une maintenance et l'affecte au véhicule identifié par son immatriculation.")
+    @ApiResponse(responseCode = "201", description = "Maintenance créée et affectée au véhicule")
+    @ApiResponse(responseCode = "400", description = "Paramètres invalides")
+    @ApiResponse(responseCode = "404", description = "Véhicule introuvable")
+    @PostMapping("/maintenances")
+    @ResponseStatus(HttpStatus.CREATED)
+    public VehiculeResponse affecterMaintenanceAvehicule(
+            @RequestParam String description,
+            @RequestParam String immatriculation) {
+        return vehiculeService.affecterMaintenanceAvehicule(description, immatriculation);
     }
 
     @Operation(summary = "Supprimer un véhicule")

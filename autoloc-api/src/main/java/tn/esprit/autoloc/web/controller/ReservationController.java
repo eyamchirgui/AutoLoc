@@ -11,10 +11,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import tn.esprit.autoloc.dto.ReservationRequest;
 import tn.esprit.autoloc.dto.ReservationResponse;
+import tn.esprit.autoloc.dto.ReservationWithContratRequestDTO;
 import tn.esprit.autoloc.service.IReservationService;
 
 @RestController
@@ -30,6 +32,13 @@ public class ReservationController {
         return reservationService.create(request);
     }
 
+    @PostMapping("/with-contrat")
+    @ResponseStatus(HttpStatus.CREATED)
+    public ReservationResponse creerReservationEtContratAssocie(
+            @Valid @RequestBody ReservationWithContratRequestDTO requestDTO) {
+        return reservationService.creerReservationEtContratAssocie(requestDTO);
+    }
+
     @GetMapping("/{id}")
     public ReservationResponse findById(@PathVariable Long id) {
         return reservationService.findById(id);
@@ -43,6 +52,14 @@ public class ReservationController {
     @PutMapping("/{id}")
     public ReservationResponse update(@PathVariable Long id, @Valid @RequestBody ReservationRequest request) {
         return reservationService.update(id, request);
+    }
+
+    @PutMapping("/{idReservation}/client")
+    public ReservationResponse affecterReservationAClient(
+            @PathVariable Long idReservation,
+            @RequestParam String nom,
+            @RequestParam String prenom) {
+        return reservationService.affecterReservationAClient(idReservation, nom, prenom);
     }
 
     @DeleteMapping("/{id}")

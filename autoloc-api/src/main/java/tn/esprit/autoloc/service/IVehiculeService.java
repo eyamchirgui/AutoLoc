@@ -15,4 +15,8 @@ public interface IVehiculeService {
     VehiculeResponse update(Long id, VehiculeRequest request);
 
     void deleteById(Long id);
+
+    VehiculeResponse affecterVehiculeAEquipement(Long idVehicule, Long idEquipement);
+
+    VehiculeResponse affecterMaintenanceAvehicule(String description, String immatriculation);
 }
